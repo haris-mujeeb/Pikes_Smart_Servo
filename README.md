@@ -1,11 +1,10 @@
 # PIKES Smart Servo Control System
 
-This repository contains the firmware and ROS 2 integration for an intelligent, partially automated smart servo system, developed for the PIKES robot architecture. 
+This repository contains the firmware and ROS 2 integration for an smart servo system, developed for the PIKES GmbH. 
 
 The project bridges a high-level ROS 2 environment with a low-level ESP32-S3 microcontroller via a custom `ros2_control` hardware interface. It features both a virtual 360-degree continuous rotation simulation and a physical Hardware-in-the-Loop (HITL) validation using an ESP32-S3 and a 180-degree servo.
 
 ## 🏗️ System Architecture
-
 The system utilizes an MQTT gateway to seamlessly pass velocity commands and telemetry between the ROS 2 lifecycle nodes and the embedded FreeRTOS environment.
 
 ```mermaid
@@ -32,23 +31,19 @@ graph TD;
 ```
 
 ## 🚀 Development Roadmap & Iterative Approach
-
 This system is built iteratively, starting with low-level hardware validation and scaling up to complex, multi-threaded robotic integrations.
 
 ### Phase 1: Hardware Bring-up & Unit Testing
-
 * [x] Initialized PlatformIO environment with the ESP-IDF framework.
 * [x] Implemented basic PWM drivers for the ESP32-S3 to sweep a physical 180° servo.
 * [x] Developed modular unit tests to validate servo positioning, duty cycle calculations, and GPIO configurations.
 
 ### Phase 2: RTOS Integration & Code Optimization
-
 * [ ] Transitioned bare-metal loops to a FreeRTOS architecture.
 * [ ] Created dedicated, thread-safe tasks for servo actuation and sensor processing to ensure deterministic performance.
-* [ ] Implemented a 40:15 gear ratio mathematical model in the control task to map motor shaft angles to the virtual door position.
+* [x] Implemented a 40:15 gear ratio mathematical model in the control task to map motor shaft angles to the virtual door position.
 
 ### Phase 3: The Communication Bridge
-
 * [ ] Integrated `esp-mqtt` to establish a robust connection to a local MQTT broker.
 * [ ] Defined JSON payload structures for incoming velocity commands and outgoing telemetry (position, simulated torque).
 * [ ] Implemented error handling and auto-reconnection logic for the WiFi and MQTT state machines.
@@ -57,7 +52,7 @@ This system is built iteratively, starting with low-level hardware validation an
 
 * [ ] Developed a custom `SystemInterface` in C++ for `ros2_control` to treat MQTT topics as hardware registers.
 * [ ] Created a `teleop_keyboard` node to capture arrow keys (rotation) and +/- keys (velocity adjustment).
-* [ ] Streamed data bi-directionally, ensuring the physical/virtual servos respond smoothly to ROS 2 commands.
+* [ ] Streamed data bi-directionally.
 
 ### Phase 5: Endpoint Detection & Simulated Dynamics
 
@@ -67,9 +62,8 @@ This system is built iteratively, starting with low-level hardware validation an
 
 ### Phase 6: Advanced Visualization & Professional Logging
 
-* [ ] Integrated comprehensive ESP-IDF logging macros (`ESP_LOGI`, `ESP_LOGW`) throughout the firmware.
+* [x] Integrated comprehensive ESP-IDF logging macros (`ESP_LOGI`, `ESP_LOGW`) throughout the firmware.
 * [ ] Added live plotting capabilities using Foxglove Studio / `rqt_plot` to visualize the relationship between commanded velocity, servo position, and simulated torque spikes in real-time.
-* [ ] Rendered detected endpoint limits dynamically on an I2C LCD component within the Wokwi simulation.
 
 ---
 
@@ -149,7 +143,37 @@ ros2 run servo_teleop keyboard_control
 
 ```
 
+### 4. Running Unit Tests
 
+This project uses PlatformIO's built-in Unity testing framework for Hardware-in-the-Loop (HITL) and software logic validation.
+
+### Available Test Suites
+
+* **`test_servo`**: Validates the LEDC PWM driver initialization and executes a physical hardware sweep (10° → 90° → 180° → 10°) tuned for the HiTEC HS-311 servo.
+* **`test_uart_logs`**: Verifies that standard ESP-IDF logging macros (`ESP_LOGI`, `ESP_LOGW`, `ESP_LOGE`) are correctly routed through the ESP32-S3 Native USB Serial/JTAG Controller.
+
+### Test Execution Commands
+
+To execute all test suites sequentially, use the PlatformIO Core CLI:
+
+```bash
+pio test
+
+```
+
+To isolate and run a specific test suite on a specific environment (e.g., just the servo hardware test), use the environment (`-e`) and folder filter (`-f`) flags:
+
+```bash
+pio test -e esp32-s3-devkitc-1 -f test_servo
+
+```
+
+**Tip:** If you want to see the complete log output (including your custom `ESP_LOGI` statements) rather than just the Pass/Fail summary, append the verbose flag (`-v`) to your command:
+
+```bash
+pio test -e esp32-s3-devkitc-1 -f test_servo -v
+
+```
 
 ## 🎥 Demonstration Video
 
