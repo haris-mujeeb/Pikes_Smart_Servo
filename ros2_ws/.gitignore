@@ -1,0 +1,9 @@
+.venv/
+build/
+install/
+log/
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class

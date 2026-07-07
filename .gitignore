@@ -1,22 +1,8 @@
-firmware/.pio/
-firmware/build/
-firmware/managed_components/
-firmware/.cache/
+# OS metadata
+.DS_Store
+Thumbs.db
 
-firmware/sdkconfig*
-!firmware/sdkconfig.defaults
-firmware/dependencies.lock
-
-firmware/.vscode/*
-!firmware/.vscode/extensions.json
-!firmware/.vscode/tasks.json
-
-firmware/compile_commands.json
-
-ros2_ws/build/
-ros2_ws/install/
-ros2_ws/log/
-ros2_ws/colcon_output.log
-
-ros2_ws/.vscode/*
-ros2_ws/.idea/
+# Editor backup/swap files
+*.swp
+*.swo
+*~

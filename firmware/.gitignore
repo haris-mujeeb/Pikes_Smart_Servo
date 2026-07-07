@@ -1,0 +1,14 @@
+.pio/
+build/
+managed_components/
+.cache/
+
+sdkconfig*
+!sdkconfig.defaults
+dependencies.lock
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+compile_commands.json
