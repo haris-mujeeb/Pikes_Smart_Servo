@@ -1,7 +1,5 @@
 # PIKES Smart Servo Control System
-
-This repository contains the ESP32-S3 firmware and ROS 2 integration for an intelligent smart servo system, developed as part of the technical evaluation for PIKES GmbH. 
-
+This repository contains the ESP32-S3 firmware and ROS 2 integration for an intelligent smart servo system. 
 The system bridges a high-level ROS 2 environment with a low-level ESP32-S3 microcontroller using an MQTT communication gateway. It supports both a virtual 360-degree continuous rotation simulation and physical Hardware-in-the-Loop (HITL) validation using a standard 180-degree servo.
 
 ---
