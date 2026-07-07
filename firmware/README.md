@@ -99,25 +99,28 @@ pio test -v
 To solve the requirements defined in [ESP_Task_for_2nd_Round..pdf](../docs/ESP_Task_for_2nd_Round..pdf), the firmware employs a clean architecture using ESP-IDF v6.0+ on top of FreeRTOS.
 
 ### System Architecture Diagram
+
 ```mermaid
-graph TD;
-    subgraph ROS 2 Workspace (Host / Docker)
-        A[Keyboard Teleop Node] -->|Twist/Velocity| B(JointGroupVelocityController)
-        B --> C[Custom ros2_control HW Interface]
-        C <-->|Read / Write JSON| D((MQTT Broker))
+graph TD
+
+    subgraph ROS2["ROS 2 Workspace"]
+        A["Keyboard Teleop Node"] -->|Velocity Command| B["JointGroupVelocityController"]
+        B --> C["ros2_control Hardware Interface"]
+        C <-->|Read / Write JSON| D["MQTT Broker"]
     end
-    
-    subgraph ESP32-S3 Firmware (ESP-IDF)
-        D <--> E[WiFi/MQTT State Manager]
-        E <--> F[Shared Data Blocks]
-        F <--> G[State Machine Engine]
-        G <--> H[Servo PWM Driver]
+
+
+    subgraph ESP32["ESP32-S3 Firmware"]
+        D <--> E["MQTT Communication"]
+        E <--> F["Servo Control State Machine"]
+        F --> G["Calibration + Safety Check"]
+        F --> H["Servo PWM Driver"]
     end
-    
-    subgraph Hardware / Simulation
-        H --> I[Wokwi 360° Virtual Servo / Arm]
-        H --> J[Physical 180° HITL Servo]
-        G --> K[Torque-based Obstacle Sensor Model]
+
+
+    subgraph HW["Hardware"]
+        H --> I["Servo / Arm"]
+        G --> K["Torque Sensor Model"]
     end
 ```
 

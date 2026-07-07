@@ -1,6 +1,5 @@
 # ROS 2 Control Workspace
-
-This directory is dedicated to the high-level orchestration of the smart servo system. It contains the code required to run the custom `ros2_control` hardware interface and the keyboard teleoperation nodes, connecting them to the ESP32-S3 over the MQTT broker network.
+It contains the code required to run the custom `ros2_control` hardware interface and the keyboard teleoperation nodes, connecting them to the ESP32-S3 over the MQTT broker network.
 
 For overall project layout, check the [Main README.md](../README.md).
 
