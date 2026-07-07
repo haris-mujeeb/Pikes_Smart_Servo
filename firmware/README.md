@@ -1,6 +1,6 @@
 # PIKES Smart Servo Control System
 This repository contains the ESP32-S3 firmware and ROS 2 integration for an intelligent smart servo system. 
-The system bridges a high-level ROS 2 environment with a low-level ESP32-S3 microcontroller using an MQTT communication gateway. It supports both a virtual 360-degree continuous rotation simulation and physical Hardware-in-the-Loop (HITL) validation using a standard 180-degree servo.
+The system bridges a high-level ROS 2 environment with a low-level physical ESP32-S3 microcontroller using an MQTT communication gateway, controling an actual standard 180-degree servo motor.
 
 ---
 
@@ -17,7 +17,7 @@ The system bridges a high-level ROS 2 environment with a low-level ESP32-S3 micr
 ## Demonstration Videos
 
 > [!IMPORTANT]
-> The demonstration videos showcase the completed implementation of Task 1 (System Setup & Control) and Task 2 (Automatic Endpoint Calibration) on physical hardware and simulation.
+> The demonstration videos showcase the completed implementation of Task 1 (System Setup & Control) and Task 2 (Automatic Endpoint Calibration) on the physical ESP32-S3 and servo motor setup.
 
 ### 1. Task 1: System Setup, PWM Sweep & MQTT Teleoperation
 This video demonstrates the initial ESP32-S3 system setup, including the standard 180 degree sweep startup test and real-time keyboard control of the servo rotation over the MQTT bridge using a custom ROS 2 interface.
@@ -54,31 +54,10 @@ Open the main firmware configuration in [src/main.c](src/main.c#L17-L19) and con
    pio run --target upload --target monitor
    ```
 
-### 3. Setup the ROS 2 Control Workspace (Host / Docker)
-A Docker environment is recommended to run the ROS 2 control package and MQTT bridge:
-1. Navigate to the `ros2_ws` directory containing the Docker files.
-2. Build the Docker container:
-   ```bash
-   docker build -t pikes_servo_ros2 .
-   ```
-3. Spin up the MQTT broker and ROS 2 node using Docker Compose:
-   ```bash
-   docker-compose up
-   ```
-
-### 4. Control the Servo via Keyboard Teleop
-Once the container is running:
-1. Open a new terminal on your host PC and attach to the container:
-   ```bash
-   docker exec -it pikes_ros2_container bash
-   ```
-2. Launch the keyboard teleoperation node:
-   ```bash
-   ros2 run servo_teleop keyboard_control
-   ```
-3. Use the keyboard to interact with the system:
-   *   **Left / Right Arrow Keys:** Rotate the servo.
-   *   **+ / - Keys:** Adjust the rotation velocity.
+### 3. Run the ROS 2 Environment (Docker or Local)
+To launch the MQTT bridges, keyboard controller, and telemetry plotting interface, refer to the detailed instructions in [ros2_ws/README.md](../ros2_ws/README.md):
+*   **Docker Setup:** Run using `docker build -t pikes_smart_servo .` and run with X11 forwarding enabled to allow the `xterm` and `rqt_plot` windows to display on your host screen.
+*   **Local Setup:** Run locally by compiling with `colcon build`, sourcing, and running `ros2 launch servo_teleop servo_teleop.launch.py`.
 
 ### 5. Running Unit Tests
 You can validate components (PWM, Endpoints, Logging, MQTT) using the built-in Unity test framework:
@@ -94,33 +73,7 @@ pio test -v
 
 ## Deep Dive: System Architecture & Implementation Details
 
-To solve the requirements defined in [ESP_Task_for_2nd_Round..pdf](../docs/ESP_Task_for_2nd_Round..pdf), the firmware employs a clean architecture using ESP-IDF v6.0+ on top of FreeRTOS.
-
-### System Architecture Diagram
-
-```mermaid
-graph TD
-
-    subgraph ROS2["ROS 2 Workspace"]
-        A["Keyboard Teleop Node"] -->|Velocity Command| B["JointGroupVelocityController"]
-        B --> C["ros2_control Hardware Interface"]
-        C <-->|Read / Write JSON| D["MQTT Broker"]
-    end
-
-
-    subgraph ESP32["ESP32-S3 Firmware"]
-        D <--> E["MQTT Communication"]
-        E <--> F["Servo Control State Machine"]
-        F --> G["Calibration + Safety Check"]
-        F --> H["Servo PWM Driver"]
-    end
-
-
-    subgraph HW["Hardware"]
-        H --> I["Servo / Arm"]
-        G --> K["Torque Sensor Model"]
-    end
-```
+To solve the requirements defined in the [ESP Task Description](../docs/ESP_Task_for_2nd_Round.pdf), the firmware employs a clean, modular structure. For the complete system architecture diagram illustrating the interaction between ROS 2, MQTT, and the ESP32 firmware, see the [Main System Architecture](../README.md#system-architecture).
 
 ---
 
@@ -136,7 +89,6 @@ The servo driver maps target degrees or rotational velocities to a high-resoluti
 As defined in Task 1, a mechanical gearbox with a **40:15 ratio** is placed between the motor shaft and the door hinge.
 *   The firmware maps target door movements to motor movements using the [servo_apply_transmission_ratio](lib/servo_driver/src/servo_driver.c#L98) function:
     $$\text{Motor Target} = \text{Door Target} \times \left(\frac{40}{15}\right)$$
-*   This ensures that high-level controllers command the door velocity directly, while the ESP32 handles low-level velocity scaling natively.
 
 #### 3. Automatic Calibration & Torque Simulation ([src/endpoint_detector.c](src/endpoint_detector.c))
 To accommodate variations in door sizes across different robots, the system uses a torque-based automatic calibration state machine:
@@ -157,8 +109,7 @@ The gateway runs asynchronously, mapping hardware parameters to MQTT broker topi
 
 ## Hardware Requirements
 *   **Microcontroller:** ESP32-S3 (Development Board)
-*   **Actuator (Physical):** HiTEC HS-311 (or equivalent standard 180° servo motor)
-*   **Actuator (Virtual):** Wokwi simulated continuous rotation servo
+*   **Actuator:** Physical standard 180° servo motor (e.g., HiTEC HS-311 or equivalent)
 *   **Network:** 2.4GHz WiFi Connection
 *   **MQTT Broker:** Public HiveMQ or local Mosquitto server
 
