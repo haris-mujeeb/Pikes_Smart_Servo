@@ -1,14 +1,22 @@
-.pio/
-build/
-managed_components/
-.cache/
+firmware/.pio/
+firmware/build/
+firmware/managed_components/
+firmware/.cache/
 
-sdkconfig*
-!sdkconfig.defaults
+firmware/sdkconfig*
+!firmware/sdkconfig.defaults
+firmware/dependencies.lock
 
-.vscode/*
-!.vscode/extensions.json
-!.vscode/tasks.json
+firmware/.vscode/*
+!firmware/.vscode/extensions.json
+!firmware/.vscode/tasks.json
 
+firmware/compile_commands.json
 
-compile_commands.json
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+ros2_ws/colcon_output.log
+
+ros2_ws/.vscode/*
+ros2_ws/.idea/
