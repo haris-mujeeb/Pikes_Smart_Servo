@@ -14,13 +14,16 @@ static const char *TAG = "SERVO_DRIVER";
 
 static servo_mode_t current_servo_mode = SERVO_MODE_180_DEGREE;
 
-static uint32_t calculate_duty_from_angle(float angle) {
-    // Clamp angle between 0 and 180
-    if (angle < 0.0f) angle = 0.0f;
-    if (angle > 180.0f) angle = 180.0f;
+static uint32_t calculate_duty_from_angle(float angle)
+{
+    if (angle < 0.0f)
+        angle = 0.0f;
+    else if (angle > 180.0f)
+        angle = 180.0f;
 
-    float pulse_width_ms = 1.0f + (angle / 180.0f) * (2.0f - 1.0f);
-    return (uint32_t)((pulse_width_ms / 20.0f) * MAX_DUTY);
+    float pulse_width_ms = 0.5f + (angle * 2.0f / 180.0f);
+
+    return (uint32_t)((pulse_width_ms * MAX_DUTY) / 20.0f);
 }
 
 static uint32_t calculate_duty_from_speed(float speed_percent) {
