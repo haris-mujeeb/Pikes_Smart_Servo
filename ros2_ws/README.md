@@ -12,7 +12,7 @@ For the overall system layout and ESP32 firmware details, check the [Main README
 The workspace coordinates the following components via its main launch file `servo_teleop.launch.py`:
 
 1.  **MQTT Command Bridge (`twist_to_mqtt`):** Subscribes to the `/cmd_vel` ROS 2 topic, scales the keyboard angular velocity commands, and publishes JSON payloads (`{"velocity": X}`) to the MQTT topic `/pikes/servo/cmd_vel`.
-2.  **MQTT Telemetry Bridge (`mqtt_to_ros`):** Connects to the MQTT broker, subscribes to the telemetry topic `/pikes/servo/torque`, parses JSON status updates (angle and torque), and republishes them as standard ROS 2 `std_msgs/Float64` messages on `/pikes/servo/angle` and `/pikes/servo/torque_sim`.
+2.  **MQTT Telemetry Bridge (`mqtt_to_ros`):** Connects to the MQTT broker, subscribes to the telemetry topic `/pikes/servo/telemetry`, parses JSON status updates (angle and torque), and republishes them as standard ROS 2 `std_msgs/Float64` messages on `/pikes/servo/angle` and `/pikes/servo/torque_sim`.
 3.  **Keyboard Teleoperation CLI (`teleop_twist_keyboard`):** Runs the standard teleoperation node inside an external `xterm` popup window to capture keyboard controls without blocking the main terminal stdout.
 4.  **Telemetry Visualizer (`rqt_plot`):** Opens a graphical interface displaying live plots of the servo angle and torque telemetry.
 

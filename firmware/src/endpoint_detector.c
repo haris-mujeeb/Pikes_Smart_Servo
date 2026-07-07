@@ -16,7 +16,7 @@ void endpoint_mock_init(void) {
     srand(time(NULL));
     
     // Generate a random starting point between 10 and 100 degrees
-    true_min_limit = 10.0f + (float)(rand() % 90);
+    true_min_limit = 0.0f + (float)(rand() % 121);
     
     // The max endpoints within a range of 60 degrees
     true_max_limit = true_min_limit + 60.0f; 

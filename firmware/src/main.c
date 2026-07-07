@@ -14,6 +14,9 @@ static const char *TAG = "MAIN_APP";
 #define SERVO_PIN 13
 #define SERVO_MODE SERVO_MODE_180_DEGREE
 
+#define ENABLE_CALIBRATION
+#define ENABLE_CLAMPING
+
 #define WIFI_SSID      "HarisPCHotspot"             // !! Replace it
 #define WIFI_PASS      "very_secure_password"       // !! Replace it
 #define MQTT_BROKER_URI "mqtt://broker.hivemq.com"  // !! Replace it
@@ -23,8 +26,10 @@ bool ready_message_printed = false;
 
 typedef enum {
     STATE_INIT,
+#ifdef ENABLE_CALIBRATION
     STATE_CALIBRATE_MIN,
     STATE_CALIBRATE_MAX,
+#endif
     STATE_OPERATIONAL,
     STATE_ERROR
 } system_state_t;
@@ -108,21 +113,27 @@ void __attribute__((weak)) app_main(void) {
                 
                 if (SERVO_MODE == SERVO_MODE_180_DEGREE) {
                     current_angle = 90.0f;
-                    servo_set_angle(current_angle);
+                    servo_set_angle(servo_apply_transmission_ratio(current_angle));
                 } else {
                     current_angle = 90.0f; 
                     servo_set_speed(0.0f); 
                 }
                 
                 usleep(1500 * 1000); // 1.5 second delay
+#ifdef ENABLE_CALIBRATION
                 current_state = STATE_CALIBRATE_MIN;
                 ESP_LOGI(TAG, "Transitioning to: CALIBRATE_MIN");
+#else
+                current_state = STATE_OPERATIONAL;
+                ESP_LOGI(TAG, "Calibration disabled. Using default bounds: %.1f -> %.1f", detected_min, detected_max);
+                ESP_LOGI(TAG, "Transitioning to: OPERATIONAL");
+#endif
                 break;
-
+#ifdef ENABLE_CALIBRATION
             case STATE_CALIBRATE_MIN:
                 if (SERVO_MODE == SERVO_MODE_180_DEGREE) {
                     current_angle -= 1.0f;
-                    servo_set_angle(current_angle);
+                    servo_set_angle(servo_apply_transmission_ratio(current_angle));
                 } else {
                     target_door_velocity = -25.0f; 
                     float motor_speed = servo_apply_transmission_ratio(target_door_velocity); 
@@ -137,7 +148,7 @@ void __attribute__((weak)) app_main(void) {
                     if (SERVO_MODE == SERVO_MODE_360_CONTINUOUS) servo_set_speed(0.0f);
                     
                     current_angle = 90.0f;
-                    if (SERVO_MODE == SERVO_MODE_180_DEGREE) servo_set_angle(current_angle);
+                    if (SERVO_MODE == SERVO_MODE_180_DEGREE) servo_set_angle(servo_apply_transmission_ratio(current_angle));
                     
                     usleep(1500 * 1000); // 1.5 second delay
                     current_state = STATE_CALIBRATE_MAX;
@@ -148,7 +159,7 @@ void __attribute__((weak)) app_main(void) {
             case STATE_CALIBRATE_MAX:
                 if (SERVO_MODE == SERVO_MODE_180_DEGREE) {
                     current_angle += 1.0f;
-                    servo_set_angle(current_angle);
+                    servo_set_angle(servo_apply_transmission_ratio(current_angle));
                 } else {
                     target_door_velocity = 25.0f; 
                     float motor_speed = servo_apply_transmission_ratio(target_door_velocity); 
@@ -170,7 +181,7 @@ void __attribute__((weak)) app_main(void) {
                     ESP_LOGI(TAG, "Transitioning to: OPERATIONAL");
                 }
                 break;
-
+#endif // ENABLE_CALIBRATION
             case STATE_OPERATIONAL:
                 if (!ready_message_printed) {
                     current_angle = (detected_max + detected_min)/2;
@@ -184,7 +195,7 @@ void __attribute__((weak)) app_main(void) {
 
                 float safe_max = detected_max - SAFETY_MARGIN;
                 float safe_min = detected_min + SAFETY_MARGIN;
-
+#ifdef ENABLE_CLAMPING
                 if (current_angle >= safe_max && target_door_velocity > 0) {
                     target_door_velocity = 0.0f;
                     current_angle = safe_max;
@@ -194,14 +205,14 @@ void __attribute__((weak)) app_main(void) {
                 } else {
                     current_angle = next_angle;
                 }
-
+#else
+                current_angle = next_angle;
+#endif // ENABLE_CLAMPING
                 if (SERVO_MODE == SERVO_MODE_180_DEGREE) {
-                    current_angle += (target_door_velocity / 25.0f); 
-                    servo_set_angle(current_angle);
+                    servo_set_angle(servo_apply_transmission_ratio(current_angle));
                 } else {
                     float motor_speed = servo_apply_transmission_ratio(target_door_velocity); 
                     servo_set_speed(motor_speed);
-                    current_angle += (target_door_velocity / 25.0f); 
                 }
 
                 static uint32_t publish_counter = 0;

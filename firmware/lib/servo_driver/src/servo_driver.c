@@ -21,7 +21,7 @@ static uint32_t calculate_duty_from_angle(float angle)
     else if (angle > 180.0f)
         angle = 180.0f;
 
-    float pulse_width_ms = 0.5f + (angle * 2.0f / 180.0f);
+    float pulse_width_ms = 1.0f + (angle / 180.0f);
 
     return (uint32_t)((pulse_width_ms * MAX_DUTY) / 20.0f);
 }
@@ -71,13 +71,26 @@ esp_err_t servo_set_angle(float angle) {
         return ESP_ERR_INVALID_STATE;
     }
 
+    static float last_applied_angle = -999.0f;
+    if (last_applied_angle != -999.0f) {
+        float diff = angle - last_applied_angle;
+        if (diff < 0) diff = -diff;
+        if (diff < 2.0f) {
+            return ESP_OK;
+        }
+    }
+
     uint32_t duty = calculate_duty_from_angle(angle);
     ESP_LOGI(TAG, "Commanding Angle: %.1f deg -> PWM Duty Cycle: %lu", angle, (unsigned long)duty);
     
     esp_err_t err = ledc_set_duty(SERVO_LEDC_MODE, SERVO_LEDC_CHANNEL, duty);
     if (err != ESP_OK) return err;
     
-    return ledc_update_duty(SERVO_LEDC_MODE, SERVO_LEDC_CHANNEL);
+    err = ledc_update_duty(SERVO_LEDC_MODE, SERVO_LEDC_CHANNEL);
+    if (err == ESP_OK) {
+        last_applied_angle = angle;
+    }
+    return err;
 }
 
 esp_err_t servo_set_speed(float speed_percent) {

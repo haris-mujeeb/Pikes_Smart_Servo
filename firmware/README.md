@@ -103,7 +103,7 @@ To accommodate variations in door sizes across different robots, the system uses
 #### 4. MQTT Gateway Protocol ([src/mqtt_manager.c](src/mqtt_manager.c))
 The gateway runs asynchronously, mapping hardware parameters to MQTT broker topics:
 *   **Inbound Control:** Subscribes to `/pikes/servo/cmd_vel` to receive incoming velocity inputs in JSON format: `{"velocity": X}`. These values are parsed using `cJSON` and updated in a thread-safe variable.
-*   **Outbound Telemetry:** Periodically publishes telemetry payload to `/pikes/servo/torque` containing JSON details: `{"angle": A, "torque": T}`. This allows live plotting in ROS tools such as Foxglove Studio or `rqt_plot`.
+*   **Outbound Telemetry:** Periodically publishes telemetry payload to `/pikes/servo/telemetry` containing JSON details: `{"angle": A, "torque": T}`. This allows live plotting in ROS tools such as Foxglove Studio or `rqt_plot`.
 
 ---
 

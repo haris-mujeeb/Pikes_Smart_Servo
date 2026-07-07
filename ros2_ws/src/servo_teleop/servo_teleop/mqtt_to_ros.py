@@ -13,7 +13,7 @@ class MqttToRos(Node):
         # Match the broker and topic from your working Twist script
         self.broker_host = "broker.hivemq.com"
         self.broker_port = 1883
-        self.telemetry_topic = "/pikes/servo/torque"
+        self.telemetry_topic = "/pikes/servo/telemetry"
         
         # ROS 2 Publishers
         self.angle_pub = self.create_publisher(Float64, '/pikes/servo/angle', 10)

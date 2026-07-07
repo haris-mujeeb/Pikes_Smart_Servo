@@ -40,7 +40,7 @@ graph TD
 
     subgraph Broker["HiveMQ Broker (MQTT Gateway)"]
         M_CMD["/pikes/servo/cmd_vel<br/>(JSON Command: velocity)"]
-        M_TEL["/pikes/servo/torque<br/>(JSON Telemetry: angle, torque)"]
+        M_TEL["/pikes/servo/telemetry<br/>(JSON Telemetry: angle, torque)"]
     end
 
     subgraph ESP32["ESP32-S3 Firmware (ESP-IDF)"]

@@ -67,5 +67,5 @@ void mqtt_pub_telemetry(float angle, float torque) {
     char payload[64];
     snprintf(payload, sizeof(payload), "{\"angle\":%.1f, \"torque\":%.1f}", angle, torque);
     
-    esp_mqtt_client_publish(client, "/pikes/servo/torque", payload, 0, 0, 0);
+    esp_mqtt_client_publish(client, "/pikes/servo/telemetry", payload, 0, 0, 0);
 }
