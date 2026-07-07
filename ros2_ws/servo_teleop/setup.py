@@ -30,6 +30,7 @@ setup(
         'console_scripts': [
             'twist_to_mqtt = servo_teleop.twist_to_mqtt:main',
             'arrow_teleop = servo_teleop.arrow_teleop:main',
+            'mqtt_to_ros = servo_teleop.mqtt_to_ros:main',
         ],
     },
 )

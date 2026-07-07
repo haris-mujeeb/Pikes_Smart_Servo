@@ -97,6 +97,8 @@ void __attribute__((weak)) app_main(void) {
     float detected_max = 180.0f;
     float target_door_velocity = 0.0f;
 
+    const float SAFETY_MARGIN = 2.0f;
+
     while (1) {       
         switch (current_state) {
             case STATE_INIT:
@@ -171,16 +173,26 @@ void __attribute__((weak)) app_main(void) {
 
             case STATE_OPERATIONAL:
                 if (!ready_message_printed) {
+                    current_angle = (detected_max + detected_min)/2;
                     ESP_LOGI(TAG, "System ready. Awaiting ROS 2 keyboard commands...");
                     ready_message_printed = true;
                 }
                 
                 target_door_velocity = mqtt_get_servo_rot_vel();
+                float angle_step = target_door_velocity / 25.0f;
+                float next_angle = current_angle + angle_step;
 
-                if (current_angle >= detected_max && target_door_velocity > 0) {
+                float safe_max = detected_max - SAFETY_MARGIN;
+                float safe_min = detected_min + SAFETY_MARGIN;
+
+                if (current_angle >= safe_max && target_door_velocity > 0) {
+                    target_door_velocity = 0.0f;
+                    current_angle = safe_max;
+                } else if (current_angle <= safe_min && target_door_velocity < 0) {
                     target_door_velocity = 0.0f; 
-                } else if (current_angle <= detected_min && target_door_velocity < 0) {
-                    target_door_velocity = 0.0f; 
+                    current_angle = safe_min;
+                } else {
+                    current_angle = next_angle;
                 }
 
                 if (SERVO_MODE == SERVO_MODE_180_DEGREE) {
@@ -204,6 +216,13 @@ void __attribute__((weak)) app_main(void) {
                 if (SERVO_MODE == SERVO_MODE_360_CONTINUOUS) servo_set_speed(0.0f);
                 while(1) { usleep(1000 * 1000); } // 1 second block
                 break;
+        }
+
+        // to transmit data every 10 cycle (~300ms)
+        static uint32_t publish_counter = 0;
+        if (publish_counter++ % 10 == 0) { 
+            float current_torque = endpoint_simulate_torque(current_angle);
+            mqtt_pub_telemetry(current_angle, current_torque);
         }
 
         usleep(30 * 1000); // 30ms
